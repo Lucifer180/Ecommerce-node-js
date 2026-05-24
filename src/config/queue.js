@@ -1,0 +1,9 @@
+const IoRedis = require("ioredis");
+
+const connection = new IoRedis({
+    host: "127.0.0.1",
+    post:6379,
+    maxRetriesPerRequest: null,
+});
+
+module.exports = connection; 
