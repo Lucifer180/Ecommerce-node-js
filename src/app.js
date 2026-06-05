@@ -6,13 +6,15 @@ const helmet = require("helmet");
 const hpp = require("hpp");
 const app = express();
 const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
+require('dotenv').config();
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "Too many requests, try again later",
 })
 app.use(express.json());
-
+app.use(morgan("dev"));
 const sanitizeXss = (value) => {
     if (typeof value === "string") return xss(value);
     if (Array.isArray(value)) return value.map(sanitizeXss);
@@ -48,12 +50,14 @@ const cartRoutes = require("./routes/cart.routes");
 const productRoutes = require("./routes/product.routes");
 const authRoutes = require("./routes/auth.routes");
 const orderRoutes = require("./routes/order.routes");
+const paymentRoutes = require("./routes/payment.routes");
 
 app.use("/api", limiter);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/payments", paymentRoutes);
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });

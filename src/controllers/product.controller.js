@@ -11,37 +11,28 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
     })
 });
 
-exports.getProducts = asyncHandler(async (req, res, next) => {
+exports.getProducts = asyncHandler(async (req, res) => {
     const { keyword = "", page = 1, limit = 10, category, minPrice, maxPrice } = req.query;
 
     const query = {};
 
-    if (keyword) {
-        query.$text = { $search: keyword }
-    }
-
-    if (category) {
-        query.category = category;
-    };
+    if (keyword) query.$text = { $search: keyword };
+    if (category) query.category = category;
 
     if (minPrice || maxPrice) {
         query.price = {};
-        if (minPrice) {
-            query.price.$gte = Number(minPrice)
-        }
-        if (maxPrice) {
-            query.price.$lte = Number(maxPrice)
-        }
+        if (minPrice) query.price.$gte = Number(minPrice);
+        if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
     const cacheKey = `products:${JSON.stringify(req.query)}`;
 
-    // Check Redis Cache
-    const cachedProducts = await client.get(cacheKey);
+    let cachedProducts = null;
+    if (client) {
+        cachedProducts = await client.get(cacheKey);
+    }
 
     if (cachedProducts) {
-        console.log("Serving from Redis");
-
         return res.json({
             success: true,
             source: "redis",
@@ -49,37 +40,31 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
         });
     }
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
 
-
-    const products = await Product.find(query).skip(skip).limit(limit).lean();
+    const products = await Product.find(query)
+        .skip(skip)
+        .limit(limitNum)
+        .lean();
 
     const totalProducts = await Product.countDocuments(query);
 
     const responseData = {
         success: true,
         source: "mongodb",
-        currentPage: Number(page),
-        totalPages: Math.ceil(totalProducts / limit),
+        currentPage: pageNum,
+        totalPages: Math.ceil(totalProducts / limitNum),
         totalProducts,
         data: products
+    };
+
+    if (client) {
+        await client.set(cacheKey, JSON.stringify(responseData), { EX: 60 });
     }
-    // Store in Redis for 60 seconds
-    await client.set(
-        cacheKey,
-        JSON.stringify(responseData),
-        {
-            EX: 60
-        }
-    );
 
-    console.log("Serving from MongoDB");
-
-    res.json({
-        success: true,
-        source: "mongodb",
-        data: responseData
-    });
+    return res.json(responseData);
 });
 
 exports.getProduct = asyncHandler(async (req, res, next) => {

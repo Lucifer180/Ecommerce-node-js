@@ -27,15 +27,22 @@ exports.register = asyncHandler(async (req, res, next) => {
     const refreshToken = generateRefreshToken(user._id);
     user.refreshToken = refreshToken;
     await user.save();
-    
-    await emailQueue.add("sendWelcomeEmail",data,{
+
+    const data = {
+        to: user.email,
+        subject: "Welcome to our platform",
+        text: `Welcome ${user.name}, thank you for joining us.`
+    };
+
+    await emailQueue.add("sendWelcomeEmail", data, {
         attempts: 3,
-        backoff:{
-            type:"exponential",
+        backoff: {
+            type: "exponential",
             delay:1000,
         }
     })
-    res.json({
+    
+    res.status(201).json({
         accessToken,
         refreshToken,
     });
@@ -52,7 +59,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     if (!user || !(await user.comparePassword(password))) {
         return next(new AppError("Invalid credentials", 401));
     }
-    res.json({
+    res.status(200).json({
         accessToken,
         refreshToken,
     })
@@ -70,7 +77,7 @@ exports.refreshToken = asyncHandler(async (req, res, next) => {
 
     const newAccessToken = generateAccessToken(user._id);
 
-    res.json({
+    res.status(200).json({
         accessToken: newAccessToken,
     });
 });
