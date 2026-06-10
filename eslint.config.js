@@ -1,14 +1,14 @@
-import globals from "globals";
+const globals = require("globals");
 
-export default [
-  {
-    languageOptions: {
-      ecmaVersion: "latest",
-      sourceType: "commonjs",
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
+module.exports = [
+    {
+        languageOptions: {
+            ecmaVersion: "latest",
+            sourceType: "commonjs",
+            globals: {
+                ...globals.node,
+                ...globals.jest,
+            },
+        },
     },
-  },
 ];
