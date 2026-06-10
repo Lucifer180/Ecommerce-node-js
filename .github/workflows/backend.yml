@@ -36,12 +36,15 @@ jobs:
       - name: Run Lint
         run: npm run lint
       
+      - name: Run Fix
+        run: npm run lint:fix
+      
       - name: Build Check
         run: npm run build
 
       - name: Build Docker Image
         run: docker build -t ecommerce-api .
-        
+
       - name: Run Tests
         run: npm test
 
