@@ -11,13 +11,11 @@ on:
 
 jobs:
   test:
-
     env:
       RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
       RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
-    
-    
+
     runs-on: ubuntu-latest
 
     steps:
@@ -29,20 +27,15 @@ jobs:
 
         with:
           node-version: 22
-        
+
       - name: Install Dependencies
-        run: npm install
-      
-      - name: Run Fix
-        run: npm run lint:fix
-      
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+
       - name: Build Check
         run: npm run build
 
-      - name: Build Docker Image
-        run: docker build -t ecommerce-api .
-
       - name: Run Tests
         run: npm test
-
-
