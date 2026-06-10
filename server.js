@@ -1,6 +1,6 @@
 const app = require("./src/app");
 const connectDb = require("./src/config/db");
-const { connectRedis } = require("./src/config/redis");
+//const { connectRedis } = require("./src/config/redis");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
@@ -18,7 +18,7 @@ process.on("unhandledRejection",(err)=>{
 });
 
 connectDb();
-connectRedis();
+//connectRedis();
 
 
 app.listen(PORT, () => {

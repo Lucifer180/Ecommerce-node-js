@@ -1,6 +1,6 @@
 const cluster = require("cluster");
 const os = require("os");
-
+require("dotenv").config(); 
 const totalCPUs = os.cpus().length;
 
 if(cluster.isPrimary){

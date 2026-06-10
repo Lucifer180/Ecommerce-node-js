@@ -1,14 +1,52 @@
 services:
-  backend:
+  api:
     build: .
+    container_name: ecommerce-api
+
     ports:
       - "5000:5000"
+
     env_file:
       - .env
+
+    environment:
+      MONGO_URI: mongodb://mongo:27017/ecommerce
+      REDIS_URL: redis://redis:6379
+
     depends_on:
+      - mongo
       - redis
 
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8
+    container_name: ecommerce-mongo
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongo-data:/data/db
+
+    healthcheck:
+      test: echo "db.runCommand("ping").ok"|| mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+    restart: unless-stopped
+
   redis:
-    image: redis:latest
+    image: redis:8
+    container_name: ecommerce-redis
+
     ports:
       - "6379:6379"
+
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+

@@ -1,6 +1,7 @@
 const Product = require("../models/product.model");
 const asyncHandler = require("../utils/asyncHandler");
-const { client } = require("../config/redis")
+// const { redis } = require("../config/redis")
+const redis = require("../config/queue");
 const AppError = require("../utils/AppError");
 
 exports.createProduct = asyncHandler(async (req, res, next) => {
@@ -28,8 +29,8 @@ exports.getProducts = asyncHandler(async (req, res) => {
     const cacheKey = `products:${JSON.stringify(req.query)}`;
 
     let cachedProducts = null;
-    if (client) {
-        cachedProducts = await client.get(cacheKey);
+    if (redis) {
+        cachedProducts = await redis.get(cacheKey);
     }
 
     if (cachedProducts) {
@@ -60,8 +61,8 @@ exports.getProducts = asyncHandler(async (req, res) => {
         data: products
     };
 
-    if (client) {
-        await client.set(cacheKey, JSON.stringify(responseData), { EX: 60 });
+    if (redis) {
+        await redis.set(cacheKey, JSON.stringify(responseData), "EX", 60);
     }
 
     return res.json(responseData);
