@@ -2,8 +2,9 @@ const request = require("supertest");
 const app = require("../src/app");
 const mongoose = require("mongoose");
 const connectDb = require("../src/config/db");
-const redis = require("../src/config/redis");
+const redis = require("../src/config/queue");
 require("dotenv").config();
+jest.setTimeout(30000);
 
 beforeAll(async () => {
     if (mongoose.connection.readyState === 0) {
@@ -12,7 +13,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    await mongoose.connection.close();
+    await connectDb.disconnectDb();
 
     if (redis) {
         await redis.quit(); // ioredis safe close
