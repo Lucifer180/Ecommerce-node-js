@@ -12,10 +12,16 @@ services:
     environment:
       MONGO_URI: mongodb://mongo:27017/ecommerce
       REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_URL: http://elasticsearch:9200
 
     depends_on:
       - mongo
       - redis
+      - elasticsearch
+
+    volumes:
+      - .:/app
+      - api-node-modules:/app/node_modules
 
     restart: unless-stopped
 
@@ -46,7 +52,16 @@ services:
       - "6379:6379"
 
     restart: unless-stopped
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
 
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    
+    ports:
+      - "9200:9200"
 volumes:
   mongo-data:
-
+  api-node-modules:

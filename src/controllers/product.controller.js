@@ -3,9 +3,21 @@ const asyncHandler = require("../utils/asyncHandler");
 // const { redis } = require("../config/redis")
 const redis = require("../config/queue");
 const AppError = require("../utils/AppError");
+const elasticClient = require("../config/elasticSearch");
 
 exports.createProduct = asyncHandler(async (req, res, next) => {
     const product = await Product.create(req.body);
+
+    await elasticClient.index({
+        index: "products",
+        id: product._id.toString(),
+        document: {
+            name: product.name,
+            description: product.description,
+            category: product.category,
+            price: product.price
+        }
+    })
     res.status(201).json({
         success: true,
         data: product
@@ -84,6 +96,16 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!product) return next(new AppError("Product not found", 404));
 
+    await elasticClient.index({
+        index: "products",
+        id: product._id.toString(),
+        document: {
+            name: product.name,
+            description: product.description,
+            category: product.category,
+            price: product.price
+        }
+    })
     res.json({
         success: true,
         message: "Product updated successfully",
@@ -94,9 +116,41 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return next(new AppError("Product not found", 404));
-
+    if (product) {
+        await elasticClient.delete({
+            index: "products",
+            id: product._id.toString()
+        })
+    }
     res.json({
         success: true,
         message: "Product deleted",
     });
-})
+});
+
+exports.searchProducts = asyncHandler(async (req, res) => {
+    const { keyword } = req.query;
+
+    if (!keyword) {
+        return res.status(400).json({
+            message: "Keyword is required"
+        });
+    }
+
+    const result = await elasticClient.search({
+        index: "products",
+        query: {
+            multi_match: {
+                query: keyword,
+                fields: [
+                    "name^3",
+                    "description",
+                    "category"
+                ],
+                fuzziness: "AUTO"
+            }
+        }
+    });
+
+    res.json(result.hits.hits);
+});
