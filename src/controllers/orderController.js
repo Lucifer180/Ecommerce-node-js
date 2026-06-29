@@ -1,8 +1,8 @@
 const Order = require("../models/orderSchema.model");
 const Cart = require("../models/cart.model");
 const Product = require("../models/product.model");
-const asyncHandler = require("../utils/asyncHandler");
-const AppError = require("../utils/AppError");
+const asyncHandler = require("../shared/utils/asyncHandler");
+const AppError = require("../shared/errors/AppError");
 const mongoose = require("mongoose");
 const orderService = require("../services/order.service")
 

@@ -1,7 +1,7 @@
 const User = require("../models/user.model");
 const jwt = require("jsonwebtoken");
-const asyncHandler = require("../utils/asyncHandler");
-const AppError = require("../utils/AppError");
+const asyncHandler = require("../shared/utils/asyncHandler");
+const AppError = require("../shared/errors/AppError");
 const emailQueue = require("../queues/email.queue");
 
 // const generateToken = (id) => {

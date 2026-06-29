@@ -22,7 +22,8 @@ services:
     volumes:
       - .:/app
       - api-node-modules:/app/node_modules
-
+    
+    command: npm run dev
     restart: unless-stopped
 
   mongo:

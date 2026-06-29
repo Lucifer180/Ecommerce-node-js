@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { createOrder, getMyOrders } = require("../controllers/orderController");
-const { protect } = require('../middlewares/auth.middleware');
+const { protect } = require('../shared/middlewares/auth.middleware');
 
 router.use(protect);
 

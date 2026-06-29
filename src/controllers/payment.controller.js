@@ -1,5 +1,5 @@
 const razorpay = require("../config/razorpay");
-const asyncHandler = require("../utils/asyncHandler");
+const asyncHandler = require("../shared/utils/asyncHandler");
 
 exports.createPaymentOrder = asyncHandler(async (req, res) => {
     const { amount } = req.body;
