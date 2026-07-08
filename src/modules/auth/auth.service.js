@@ -53,6 +53,15 @@ const getCurrentUser = async (userId) => {
     return user;
 };
 
+const getforgotPassword = async (email) => {
+    const user = await authRepository.forgotPassword(email);
+
+    if (!user) {
+        throw new AppError("user not found", 404);
+    };
+    return user;
+}
+
 module.exports = {
-    loginUser, registerUser, getCurrentUser
+    loginUser, registerUser, getCurrentUser,getforgotPassword
 }

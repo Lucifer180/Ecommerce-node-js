@@ -51,13 +51,15 @@ const productRoutes = require("./routes/product.routes");
 const authRoutes = require("./modules/auth/auth.routes")
 const orderRoutes = require("./routes/order.routes");
 const paymentRoutes = require("./routes/payment.routes");
-
+const emailRoutes = require("./modules/mail/index")
 app.use("/api", limiter);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/test-email", emailRoutes);
+
 app.get("/", (req, res) => {
     res.send("Hello World!");
 });
