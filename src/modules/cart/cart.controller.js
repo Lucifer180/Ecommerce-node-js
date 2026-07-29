@@ -1,7 +1,7 @@
-const Cart = require("../models/cart.model");
-const Product = require("../models/product.model");
-const asyncHandler = require("../shared/utils/asyncHandler");;
-const AppError = require("../shared/errors/AppError");
+const Cart = require("./cart.model");
+const Product = require("../products/product.model");
+const asyncHandler = require("../../shared/utils/asyncHandler");
+const AppError = require("../../shared/errors/AppError");
 
 exports.addToCart = asyncHandler(async (req, res, next) => {
     const { productId, quantity } = req.body;

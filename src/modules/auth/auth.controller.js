@@ -1,7 +1,6 @@
-const { token } = require("morgan");
 const asyncHandler = require("../../shared/utils/asyncHandler");
 const authService = require("./auth.service");
-const { refreshToken } = require("../../controllers/auth.controller");
+const AppError = require("../../shared/errors/AppError");
 const sendEmail = require("../../shared/utils/sendEmail");
 const User = require("./user.model")
 exports.register = asyncHandler(async (req, res) => {
@@ -40,6 +39,24 @@ exports.login = asyncHandler(async (req, res) => {
         //     role: result.user.role
         // }
     })
+});
+
+exports.refreshToken = asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body;
+
+    const accessToken = await authService.refreshAccessToken(refreshToken);
+
+    res.status(200).json({
+        accessToken,
+    });
+});
+
+exports.logout = asyncHandler(async (req, res) => {
+    await authService.logoutUser(req.user._id);
+
+    res.json({
+        message: "Logged out successfully",
+    });
 });
 
 exports.getMe = asyncHandler(async (req, res) => {

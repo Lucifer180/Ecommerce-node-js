@@ -1,5 +1,6 @@
 const crypto = require("crypto");
-const asyncHandler = require("../shared/utils/asyncHandler");
+const asyncHandler = require("../../shared/utils/asyncHandler");
+const AppError = require("../../shared/errors/AppError");
 
 exports.verifyPayment = asyncHandler(async (req, res, next) => {
 

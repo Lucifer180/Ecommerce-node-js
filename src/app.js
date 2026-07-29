@@ -46,11 +46,11 @@ app.use((req, res, next) => {
 app.use(hpp());
 app.use(helmet());
 app.use(cors());
-const cartRoutes = require("./routes/cart.routes");
-const productRoutes = require("./routes/product.routes");
+const cartRoutes = require("./modules/cart/cart.routes");
+const productRoutes = require("./modules/products/product.routes");
 const authRoutes = require("./modules/auth/auth.routes")
-const orderRoutes = require("./routes/order.routes");
-const paymentRoutes = require("./routes/payment.routes");
+const orderRoutes = require("./modules/orders/order.routes");
+const paymentRoutes = require("./modules/payments/payment.routes");
 const emailRoutes = require("./modules/mail/index")
 app.use("/api", limiter);
 app.use("/api/products", productRoutes);

@@ -1,10 +1,7 @@
-const Order = require("../models/orderSchema.model");
-const Cart = require("../models/cart.model");
-const Product = require("../models/product.model");
-const asyncHandler = require("../shared/utils/asyncHandler");
-const AppError = require("../shared/errors/AppError");
+const Order = require("./order.model");
+const asyncHandler = require("../../shared/utils/asyncHandler");
 const mongoose = require("mongoose");
-const orderService = require("../services/order.service")
+const orderService = require("./order.service")
 
 exports.createOrder = asyncHandler(async (req, res, next) => {
     const session = await mongoose.startSession();

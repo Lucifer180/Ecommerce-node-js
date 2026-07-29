@@ -1,6 +1,6 @@
-const Order = require("../models/orderSchema.model");
-const Product = require("../models/product.model");
-const Cart = require("../models/cart.model");
+const Order = require("./order.model");
+const Product = require("../products/product.model");
+const Cart = require("../cart/cart.model");
 
 const createOrder = async (userId, session) => {
     const cart = await Cart.findOne({

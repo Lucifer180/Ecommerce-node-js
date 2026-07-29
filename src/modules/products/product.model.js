@@ -24,5 +24,5 @@ module.exports = mongoose.model("Product", productSchema.index({
     name: "text",
     description: "text",
       category: 1,
-    price: 1 
+    price: 1
 }));
