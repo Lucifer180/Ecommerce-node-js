@@ -1,9 +1,9 @@
-const Product = require("../models/product.model");
-const asyncHandler = require("../shared/utils/asyncHandler");
-// const { redis } = require("../config/redis")
-const redis = require("../config/queue");
-const AppError = require("../shared/errors/AppError");
-const elasticClient = require("../config/elasticSearch");
+const Product = require("./product.model");
+const asyncHandler = require("../../shared/utils/asyncHandler");
+// const { redis } = require("../../config/redis")
+const redis = require("../../config/queue");
+const AppError = require("../../shared/errors/AppError");
+const elasticClient = require("../../config/elasticSearch");
 
 exports.createProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.create(req.body);

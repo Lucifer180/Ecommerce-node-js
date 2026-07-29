@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const authRepository = require("./auth.repository");
 const AppError = require("../../shared/errors/AppError");
 const { generateAccessToken, generateRefreshToken } = require("../../shared/utils/generateToken");
@@ -53,6 +54,26 @@ const getCurrentUser = async (userId) => {
     return user;
 };
 
+const refreshAccessToken = async (refreshToken) => {
+    if (!refreshToken) {
+        throw new AppError("No refresh Token", 401);
+    };
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+    const user = await authRepository.findUserById(decoded.id);
+
+    if (!user || user.refreshToken !== refreshToken) {
+        throw new AppError("invalid refresh Token", 401);
+    };
+
+    return generateAccessToken(user._id);
+};
+
+const logoutUser = async (userId) => {
+    return authRepository.saverefreshToken(userId, null);
+};
+
 const getforgotPassword = async (email) => {
     const user = await authRepository.forgotPassword(email);
 
@@ -63,5 +84,5 @@ const getforgotPassword = async (email) => {
 }
 
 module.exports = {
-    loginUser, registerUser, getCurrentUser,getforgotPassword
+    loginUser, registerUser, getCurrentUser, getforgotPassword, refreshAccessToken, logoutUser
 }

@@ -14,6 +14,10 @@ router.post("/login", loginValidation, validate, authController.login);
 
 router.get("/me", protect, authController.getMe);
 
+router.post("/refreshToken", authController.refreshToken);
+
+router.post("/logout", protect, authController.logout);
+
 router.post("/forgot-password",authController.getforgotPassword);
 
 module.exports = router;

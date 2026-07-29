@@ -1,8 +1,8 @@
 const express = require("express");
-const { protect } = require("../shared/middlewares/auth.middleware")
+const { protect } = require("../../shared/middlewares/auth.middleware")
 const router = express.Router();
 
-const { createProduct, getProducts, getProduct, updateProduct, deleteProduct, searchProducts } = require("../controllers/product.controller");
+const { createProduct, getProducts, getProduct, updateProduct, deleteProduct, searchProducts } = require("./product.controller");
 
 router.route("/")
     .post(protect, createProduct)
@@ -17,4 +17,3 @@ router.route("/:id")
 
 
 module.exports = router;
-
