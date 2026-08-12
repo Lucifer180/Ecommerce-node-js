@@ -18,6 +18,8 @@ router.post("/refreshToken", authController.refreshToken);
 
 router.post("/logout", protect, authController.logout);
 
-router.post("/forgot-password",authController.getforgotPassword);
+router.post("/forgot-password", authController.getForgotPassword);
+
+router.patch("/reset-password/:token", authController.ResetPassword);
 
 module.exports = router;

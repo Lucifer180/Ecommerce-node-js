@@ -1,14 +1,27 @@
 const { Worker } = require("bullmq");
 const connection = require("../config/queue");
+const transporter = require("../config/mail");
 
 const worker = new Worker("emailQueue",
-    async (job)=>{
-        console.log("Processing job");
+    async (job) => {
+        console.log(`Processing email job: ${job.name}`);
         console.log(job.data);
 
-        await new Promise((resolve)=>setTimeout(resolve,3000));
-        
-        console.log("Job completed");
+        const { to, subject, text, html } = job.data;
+
+        try {
+            const info = await transporter.sendMail({
+                from: process.env.SMTP_FROM || process.env.SMTP_EMAIL,
+                to,
+                subject,
+                text,
+                html,
+            });
+            console.log(`Email sent: ${info.messageId}`);
+        } catch (error) {
+            console.error(`Failed to send email:`, error);
+            throw error; // Rethrow to let BullMQ handle the retry/failure logic
+        }
     },
     {connection}
 );
