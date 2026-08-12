@@ -16,13 +16,25 @@ const productSchema = new mongoose.Schema({
         default: 0
     },
     category: String,
-    image: String,
+    images: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Upload"
+        }
+    ],
+    // seller: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //     required: true
+    // }
 
 }, { timestamps: true });
 
-module.exports = mongoose.model("Product", productSchema.index({
+productSchema.index({
     name: "text",
     description: "text",
-      category: 1,
+    category: 1,
     price: 1
-}));
+});
+
+module.exports = mongoose.model("Product", productSchema);

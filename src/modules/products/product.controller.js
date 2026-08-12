@@ -1,23 +1,9 @@
-const Product = require("./product.model");
+const productService = require("./product.service");
 const asyncHandler = require("../../shared/utils/asyncHandler");
-// const { redis } = require("../../config/redis")
-const redis = require("../../config/queue");
-const AppError = require("../../shared/errors/AppError");
-const elasticClient = require("../../config/elasticSearch");
 
 exports.createProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.create(req.body);
+  const product = await productService.createProduct(req.body, req.user.id);
 
-  await elasticClient.index({
-    index: "products",
-    id: product._id.toString(),
-    document: {
-      name: product.name,
-      description: product.description,
-      category: product.category,
-      price: product.price,
-    },
-  });
   res.status(201).json({
     success: true,
     data: product,
@@ -25,69 +11,16 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
 });
 
 exports.getProducts = asyncHandler(async (req, res) => {
-  const {
-    keyword = "",
-    page = 1,
-    limit = 10,
-    category,
-    minPrice,
-    maxPrice,
-  } = req.query;
+  const result = await productService.getProducts(req.query);
 
-  const query = {};
-
-  if (keyword) query.$text = { $search: keyword };
-  if (category) query.category = category;
-
-  if (minPrice || maxPrice) {
-    query.price = {};
-    if (minPrice) query.price.$gte = Number(minPrice);
-    if (maxPrice) query.price.$lte = Number(maxPrice);
-  }
-
-  const cacheKey = `products:${JSON.stringify(req.query)}`;
-
-  let cachedProducts = null;
-  if (redis) {
-    cachedProducts = await redis.get(cacheKey);
-  }
-
-  if (cachedProducts) {
-    return res.json({
-      success: true,
-      source: "redis",
-      data: JSON.parse(cachedProducts),
-    });
-  }
-
-  const pageNum = Number(page);
-  const limitNum = Number(limit);
-  const skip = (pageNum - 1) * limitNum;
-
-  const products = await Product.find(query).skip(skip).limit(limitNum).lean();
-
-  const totalProducts = await Product.countDocuments(query);
-
-  const responseData = {
+  return res.json({
     success: true,
-    source: "mongodb",
-    currentPage: pageNum,
-    totalPages: Math.ceil(totalProducts / limitNum),
-    totalProducts,
-    data: products,
-  };
-
-  if (redis) {
-    await redis.set(cacheKey, JSON.stringify(responseData), "EX", 60);
-  }
-
-  return res.json(responseData);
+    ...result,
+  });
 });
 
 exports.getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
-
-  if (!product) return next(new AppError("Product not found", 404));
+  const product = await productService.getProductById(req.params.id);
 
   res.json({
     success: true,
@@ -96,22 +29,8 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-  if (!product) return next(new AppError("Product not found", 404));
+  const product = await productService.updateProduct(req.params.id, req.body, req.user.id);
 
-  await elasticClient.index({
-    index: "products",
-    id: product._id.toString(),
-    document: {
-      name: product.name,
-      description: product.description,
-      category: product.category,
-      price: product.price,
-    },
-  });
   res.json({
     success: true,
     message: "Product updated successfully",
@@ -120,14 +39,8 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 });
 
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
-  if (!product) return next(new AppError("Product not found", 404));
-  if (product) {
-    await elasticClient.delete({
-      index: "products",
-      id: product._id.toString(),
-    });
-  }
+  await productService.deleteProduct(req.params.id);
+
   res.json({
     success: true,
     message: "Product deleted",
@@ -143,12 +56,7 @@ exports.searchProducts = asyncHandler(async (req, res) => {
     });
   }
 
-  const result = await elasticClient.search({
-    index: "products",
-    query: {
-      match_all: {},
-    },
-  });
+  const result = await productService.searchProducts(keyword);
 
-  res.json(result.hits.hits);
+  res.json(result);
 });

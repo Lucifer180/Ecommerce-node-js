@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const authRepository = require("./auth.repository");
 const AppError = require("../../shared/errors/AppError");
+const crypto = require("crypto")
 const { generateAccessToken, generateRefreshToken } = require("../../shared/utils/generateToken");
 
 const registerUser = async ({ name, email, password }) => {
@@ -81,8 +82,22 @@ const getforgotPassword = async (email) => {
         throw new AppError("user not found", 404);
     };
     return user;
-}
+};
+
+const resetPassword = async (token,newPassword) =>{
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+  const user = await authRepository.findUserByRefreshToken(hashedToken);
+
+  if(!user) {
+    throw new AppError("Invalid or expired reset token", 400);
+  };
+
+  await authRepository.updatePassword(user,newPassword);
+
+  return user;
+};
+
 
 module.exports = {
-    loginUser, registerUser, getCurrentUser, getforgotPassword, refreshAccessToken, logoutUser
+    loginUser, registerUser, getCurrentUser, getforgotPassword, refreshAccessToken, logoutUser, resetPassword
 }

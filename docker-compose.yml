@@ -63,6 +63,25 @@ services:
     
     ports:
       - "9200:9200"
+
+  # worker:
+  #   build: .
+  #   container_name: ecommerce-worker
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     MONGO_URI: mongodb://mongo:27017/ecommerce
+  #     REDIS_URL: redis://redis:6379
+  #     ELASTICSEARCH_URL: http://elasticsearch:9200
+  #   depends_on:
+  #     - mongo
+  #     - redis
+  #   volumes:
+  #     - .:/app
+  #     - api-node-modules:/app/node_modules
+  #   command: npx nodemon worker.js
+  #   restart: unless-stopped
+
 volumes:
   mongo-data:
   api-node-modules:
