@@ -1,5 +1,14 @@
 const User = require("./user.model");
-const AppError = require("../../shared/errors/AppError")
+const AppError = require("../../shared/errors/AppError");
+
+const allUsers = async () => {
+    const users = await User.find();
+    return users;
+};
+
+const updateRole = async (id, role) => {
+    const users = await User.findByIdAndUpdate(id, { role }, { new: true });
+}
 const findUserByEmail = async (email, includePassword = false) => {
     const query = User.findOne({ email });
 
@@ -55,5 +64,5 @@ const updatePassword = async (user, password) => {
 };
 
 module.exports = {
-    findUserByEmail, findUserById, createUser, saverefreshToken, forgotPassword, findUserByRefreshToken, updatePassword
+    findUserByEmail, findUserById, createUser, saverefreshToken, forgotPassword, findUserByRefreshToken, updatePassword, allUsers, updateRole
 }
