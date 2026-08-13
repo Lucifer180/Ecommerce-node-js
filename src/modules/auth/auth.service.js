@@ -4,6 +4,23 @@ const AppError = require("../../shared/errors/AppError");
 const crypto = require("crypto")
 const { generateAccessToken, generateRefreshToken } = require("../../shared/utils/generateToken");
 
+const getAllUsers = async () => {
+    const users = await authRepository.allUsers();
+
+    return users;
+
+};
+
+const updateRoleUser = async (id, role) => {
+    if (role !== "user" && role !== "admin") {
+        throw new AppError("The role is not permitted");
+    }
+
+    const user = await authRepository.updateRole(id, role);
+
+    return user;
+};
+
 const registerUser = async ({ name, email, password }) => {
     const existingUser = await authRepository.findUserByEmail(email);
 
@@ -84,20 +101,20 @@ const getforgotPassword = async (email) => {
     return user;
 };
 
-const resetPassword = async (token,newPassword) =>{
-  const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
-  const user = await authRepository.findUserByRefreshToken(hashedToken);
+const resetPassword = async (token, newPassword) => {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+    const user = await authRepository.findUserByRefreshToken(hashedToken);
 
-  if(!user) {
-    throw new AppError("Invalid or expired reset token", 400);
-  };
+    if (!user) {
+        throw new AppError("Invalid or expired reset token", 400);
+    };
 
-  await authRepository.updatePassword(user,newPassword);
+    await authRepository.updatePassword(user, newPassword);
 
-  return user;
+    return user;
 };
 
 
 module.exports = {
-    loginUser, registerUser, getCurrentUser, getforgotPassword, refreshAccessToken, logoutUser, resetPassword
+    loginUser, registerUser, getCurrentUser, getforgotPassword, refreshAccessToken, logoutUser, resetPassword, getAllUsers, updateRoleUser
 }

@@ -1,7 +1,25 @@
 const asyncHandler = require("../../shared/utils/asyncHandler");
 const authService = require("./auth.service");
 const emailQueue = require("../../queues/email.queue")
-const User = require("./user.model")
+const User = require("./user.model");
+
+exports.getUsers = asyncHandler(async (req, res) => {
+    const users = await authService.getAllUsers();
+    res.status(200).json({
+        succes: true,
+        data: users
+    });
+});
+
+exports.updateRole = asyncHandler(async (req, res) => {
+    const { role } = req.body;
+    const users = await authService.updateRoleUser(req.user.id, role);
+
+    res.status(200).json({
+        success: true,
+        message: "role updated successfully"
+    })
+})
 exports.register = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     const result = await authService.registerUser({
