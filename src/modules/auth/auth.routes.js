@@ -6,7 +6,7 @@ const authController = require("./auth.controller");
 const { registerValidation, loginValidation } = require("./auth.validation");
 
 const validate = require("../../shared/middlewares/validate.middleware");
-const { protect } = require("../../shared/middlewares/auth.middleware");
+const { protect, authorize } = require("../../shared/middlewares/auth.middleware");
 
 router.post("/register", registerValidation, validate, authController.register);
 
@@ -22,8 +22,9 @@ router.post("/forgot-password", authController.getForgotPassword);
 
 router.patch("/reset-password/:token", authController.ResetPassword);
 
-router.get("/", authController.getUsers);
+// Admin only: listing every user and changing roles are both privileged.
+router.get("/", protect, authorize("admin"), authController.getUsers);
 
-router.put("/",protect,authController.updateRole)
+router.put("/", protect, authorize("admin"), authController.updateRole);
 
 module.exports = router;
