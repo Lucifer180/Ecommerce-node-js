@@ -5,38 +5,67 @@ const User = require("./user.model");
 
 exports.getUsers = asyncHandler(async (req, res) => {
     const users = await authService.getAllUsers();
-    res.status(200).json({
-        succes: true,
-        data: users
-    });
-});
-
-exports.updateRole = asyncHandler(async (req, res) => {
-    const { role } = req.body;
-    const users = await authService.updateRoleUser(req.user.id, role);
 
     res.status(200).json({
         success: true,
-        message: "role updated successfully"
+        data: users.map((user) => ({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            createdAt: user.createdAt,
+        }))
+    });
+});
+
+/**
+ * Admin-only. Previously this updated `req.user.id` — the caller's own record —
+ * which let any signed-in user promote themselves to admin.
+ */
+exports.updateRole = asyncHandler(async (req, res) => {
+    const { userId, role } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({
+            success: false,
+            message: "userId is required"
+        });
+    }
+
+    const user = await authService.updateRoleUser(userId, role);
+
+    res.status(200).json({
+        success: true,
+        message: "role updated successfully",
+        data: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        }
     })
 })
+/** Shared shape for the token-issuing endpoints, so the client can gate UI immediately. */
+const toAuthPayload = (result) => ({
+    success: true,
+    acesstoken: result.accessToken,
+    refreshToken: result.refreshToken,
+    role: result.user.role,
+    user: {
+        _id: result.user._id,
+        name: result.user.name,
+        email: result.user.email,
+        role: result.user.role,
+    },
+});
+
 exports.register = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
     const result = await authService.registerUser({
         name, email, password
     });
 
-    res.status(201).json({
-        success: true,
-        acesstoken: result.accessToken,
-        refreshToken: result.refreshToken,
-        // user: {
-        //     _id: result._id,
-        //     name: result.user.name,
-        //     email: result.user.email,
-        //     role: result.user.role,
-        // }
-    });
+    res.status(201).json(toAuthPayload(result));
 });
 
 exports.login = asyncHandler(async (req, res) => {
@@ -45,26 +74,19 @@ exports.login = asyncHandler(async (req, res) => {
     const result = await authService.loginUser({
         email, password
     });
-    res.status(200).json({
-        success: true,
-        acesstoken: result.accessToken,
-        refreshToken: result.refreshToken,
-        // user: {
-        //     _id: result.user._id,
-        //     name: result.user.name,
-        //     email: result.user.email,
-        //     role: result.user.role
-        // }
-    })
+
+    res.status(200).json(toAuthPayload(result));
 });
 
 exports.refreshToken = asyncHandler(async (req, res) => {
     const { refreshToken } = req.body;
 
-    const accessToken = await authService.refreshAccessToken(refreshToken);
+    const { accessToken, user } = await authService.refreshAccessToken(refreshToken);
 
     res.status(200).json({
+        success: true,
         accessToken,
+        role: user.role,
     });
 });
 
@@ -77,7 +99,7 @@ exports.logout = asyncHandler(async (req, res) => {
 });
 
 exports.getMe = asyncHandler(async (req, res) => {
-    const user = await authService.getCurrentUser(req._id);
+    const user = await authService.getCurrentUser(req.user._id);
     res.status(200).json({
         success: true,
         user,

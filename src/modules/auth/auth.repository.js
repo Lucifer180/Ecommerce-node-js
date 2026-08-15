@@ -7,8 +7,8 @@ const allUsers = async () => {
 };
 
 const updateRole = async (id, role) => {
-    const users = await User.findByIdAndUpdate(id, { role }, { new: true });
-}
+    return User.findByIdAndUpdate(id, { role }, { new: true });
+};
 const findUserByEmail = async (email, includePassword = false) => {
     const query = User.findOne({ email });
 
@@ -20,6 +20,11 @@ const findUserByEmail = async (email, includePassword = false) => {
 
 const findUserById = async (userId) => {
     return User.findById(userId);
+};
+
+/** `refreshToken` is `select: false`, so it has to be asked for explicitly. */
+const findUserByIdWithRefreshToken = async (userId) => {
+    return User.findById(userId).select("+refreshToken");
 };
 
 const createUser = async (payload) => {
@@ -43,7 +48,7 @@ const forgotPassword = async (email) => {
 };
 
 const saverefreshToken = async (userId, refreshToken) => {
-    return User.findByIdAndUpdate(userId, { refreshToken }, { new: true, select: "+password" });
+    return User.findByIdAndUpdate(userId, { refreshToken }, { new: true });
 };
 
 const findUserByRefreshToken = async (hashedToken) => {
@@ -64,5 +69,5 @@ const updatePassword = async (user, password) => {
 };
 
 module.exports = {
-    findUserByEmail, findUserById, createUser, saverefreshToken, forgotPassword, findUserByRefreshToken, updatePassword, allUsers, updateRole
+    findUserByEmail, findUserById, findUserByIdWithRefreshToken, createUser, saverefreshToken, forgotPassword, findUserByRefreshToken, updatePassword, allUsers, updateRole
 }

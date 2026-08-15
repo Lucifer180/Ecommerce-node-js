@@ -45,7 +45,10 @@ app.use((req, res, next) => {
 
 app.use(hpp());
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}));
 const cartRoutes = require("./modules/cart/cart.routes");
 const productRoutes = require("./modules/products/product.routes");
 const authRoutes = require("./modules/auth/auth.routes")
@@ -53,6 +56,7 @@ const orderRoutes = require("./modules/orders/order.routes");
 const paymentRoutes = require("./modules/payments/payment.routes");
 const emailRoutes = require("./modules/mail/index");
 const uploadRoutes = require("./modules/uploads/upload.routes");
+const notificationRoutes = require("./modules/notifications/notification.routes");
 
 app.use("/api", limiter);
 app.use("/api/products", productRoutes);
@@ -62,6 +66,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/test-email", emailRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
     res.send("Hello World!");

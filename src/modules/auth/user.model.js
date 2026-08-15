@@ -23,6 +23,13 @@ const userSchema = new mongoose.Schema({
         enum: ["user", "admin"],
         default: "user"
     },
+    // Persisted so `refreshAccessToken` can verify the presented token. Without
+    // this field Mongoose silently dropped the write and refresh always failed.
+    refreshToken: {
+        type: String,
+        select: false
+    },
+
     passwordResetToken: String,
     passwordResetExpires: { type: Date },
 

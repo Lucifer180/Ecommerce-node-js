@@ -13,10 +13,14 @@ const getAllUsers = async () => {
 
 const updateRoleUser = async (id, role) => {
     if (role !== "user" && role !== "admin") {
-        throw new AppError("The role is not permitted");
+        throw new AppError("The role is not permitted", 400);
     }
 
     const user = await authRepository.updateRole(id, role);
+
+    if (!user) {
+        throw new AppError("user not found", 404);
+    }
 
     return user;
 };
@@ -79,13 +83,13 @@ const refreshAccessToken = async (refreshToken) => {
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
-    const user = await authRepository.findUserById(decoded.id);
+    const user = await authRepository.findUserByIdWithRefreshToken(decoded.id);
 
     if (!user || user.refreshToken !== refreshToken) {
         throw new AppError("invalid refresh Token", 401);
     };
 
-    return generateAccessToken(user._id);
+    return { accessToken: generateAccessToken(user._id), user };
 };
 
 const logoutUser = async (userId) => {
