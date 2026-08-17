@@ -19,7 +19,11 @@ process.on("unhandledRejection", (err) => {
 });
 
 connectDb();
-verifyEmail();
+connectDb();
+
+verifyEmail().catch((err) => {
+    console.error("Email verification failed:", err);
+});
 //connectRedis();
 
 

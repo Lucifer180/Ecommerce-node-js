@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const elasticClient = require("../src/config/elasticSearch");
 const Product = require("../src/modules/products/product.model");
+const dotenv = require("dotenv");
+
+require("dotenv").config();
 
 async function waitForElastic(retries = 30, delayMs = 2000) {
     for (let i = 1; i <= retries; i++) {
@@ -44,4 +47,4 @@ async function reindexProducts() {
     }
 }
 
-reindexProducts();
+reindexProducts();

@@ -12,7 +12,10 @@ const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     message: "Too many requests, try again later",
-})
+});
+
+
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(morgan("dev"));
 const sanitizeXss = (value) => {
