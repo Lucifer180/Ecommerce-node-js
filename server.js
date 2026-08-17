@@ -19,8 +19,6 @@ process.on("unhandledRejection", (err) => {
 });
 
 connectDb();
-connectDb();
-
 verifyEmail().catch((err) => {
     console.error("Email verification failed:", err);
 });
