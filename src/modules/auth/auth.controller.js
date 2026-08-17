@@ -23,16 +23,16 @@ exports.getUsers = asyncHandler(async (req, res) => {
  * which let any signed-in user promote themselves to admin.
  */
 exports.updateRole = asyncHandler(async (req, res) => {
-    const { userId, role } = req.body;
+    const { role } = req.body;
 
-    if (!userId) {
-        return res.status(400).json({
-            success: false,
-            message: "userId is required"
-        });
-    }
+    // if (!userId) {
+    //     return res.status(400).json({
+    //         success: false,
+    //         message: "userId is required"
+    //     });
+    // }
 
-    const user = await authService.updateRoleUser(userId, role);
+    const user = await authService.updateRoleUser(req.user.id, role);
 
     res.status(200).json({
         success: true,

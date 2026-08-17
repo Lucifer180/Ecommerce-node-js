@@ -10,7 +10,7 @@ services:
       - .env
 
     environment:
-      MONGO_URI: mongodb://mongo:27017/ecommerce
+      MONGO_URI: mongodb://mongo:27017/ecommerce?replicaSet=rs0&retryWrites=true
       REDIS_URL: redis://redis:6379
       ELASTICSEARCH_URL: http://elasticsearch:9200
 
@@ -33,14 +33,22 @@ services:
     ports:
       - "27017:27017"
 
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+
     volumes:
       - mongo-data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
 
     healthcheck:
-      test: echo "db.runCommand("ping").ok"|| mongosh localhost:27017/test --quiet
+      test: |
+        mongosh --quiet --eval "
+          try { rs.status(); quit(0); } catch(e) {
+            rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}); quit(0);
+          }
+        "
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
       start_period: 30s
 
     restart: unless-stopped
@@ -70,7 +78,7 @@ services:
   #   env_file:
   #     - .env
   #   environment:
-  #     MONGO_URI: mongodb://mongo:27017/ecommerce
+  #     MONGO_URI: mongodb://mongo:27017/ecommerce?retryWrites=false
   #     REDIS_URL: redis://redis:6379
   #     ELASTICSEARCH_URL: http://elasticsearch:9200
   #   depends_on:

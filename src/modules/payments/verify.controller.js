@@ -15,6 +15,7 @@ exports.verifyPayment = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         message: "Payment verified successfully",
+        status: "paid",
         data: {
             razorpay_order_id,
             razorpay_payment_id,

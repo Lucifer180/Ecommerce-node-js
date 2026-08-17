@@ -27,4 +27,6 @@ router.get("/", protect, authorize("admin"), authController.getUsers);
 
 router.put("/", protect, authorize("admin"), authController.updateRole);
 
+router.put("/update", protect, authController.updateRole);
+
 module.exports = router;
