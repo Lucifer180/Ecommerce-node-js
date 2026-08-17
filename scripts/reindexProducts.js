@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const elasticClient = require("../src/config/elasticSearch");
 const Product = require("../src/modules/products/product.model");
-const dotenv = require("dotenv");
+// const dotenv = require("dotenv");
 
 require("dotenv").config();
 
