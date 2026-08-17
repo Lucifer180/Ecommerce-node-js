@@ -1,6 +1,7 @@
 const Order = require("./order.model");
 const Product = require("../products/product.model");
 const Cart = require("../cart/cart.model");
+const ApiError = require("../../shared/errors/AppError");
 
 const createOrder = async (userId, session) => {
     const cart = await Cart.findOne({
@@ -33,11 +34,11 @@ const createOrder = async (userId, session) => {
             price: product.price
         });
     }
-    const order = await Order.create({
+    const order = await Order.create([{
         user: userId,
         items: orderItems,
         totalPrice
-    }, { session });
+    }], { session });
 
     cart.items = [];
 

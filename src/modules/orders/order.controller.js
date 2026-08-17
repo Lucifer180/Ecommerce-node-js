@@ -8,7 +8,7 @@ exports.createOrder = asyncHandler(async (req, res, next) => {
     session.startTransaction();
 
     try {
-        const order = await orderService.createOrder(req._id, session);
+        const order = await orderService.createOrder(req.user._id, session);
         await session.commitTransaction();
         res.status(201).json({
             success: true,
