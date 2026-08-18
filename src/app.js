@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 app.use(hpp());
 app.use(helmet());
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true
 }));
 const cartRoutes = require("./modules/cart/cart.routes");
