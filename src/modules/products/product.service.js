@@ -2,9 +2,9 @@ const Product = require("./product.model");
 const productRepo = require("./product.repository");
 const redis = require("../../config/queue");
 const AppError = require("../../shared/errors/AppError");
-const elasticClient = require("../../config/elasticSearch");
+// const elasticClient = require("../../config/elasticSearch");
 const Upload = require("../uploads/upload.model");
-const logger = require("../../shared/utils/logger");
+// const logger = require("../../shared/utils/logger");
 
 const validateImages = async (images, userId) => {
   if (!images || images.length === 0) {
@@ -30,20 +30,20 @@ exports.createProduct = async (productData, userId) => {
 
   const product = await productRepo.create({ ...productData, seller: userId });
 
-  try {
-    await elasticClient.index({
-      index: "products",
-      id: product._id.toString(),
-      document: {
-        name: product.name,
-        description: product.description,
-        category: product.category,
-        price: product.price,
-      },
-    });
-  } catch (err) {
-    logger.warn("Elasticsearch indexing failed for product", { id: product._id, error: err.message });
-  }
+  // try {
+  //   await elasticClient.index({
+  //     index: "products",
+  //     id: product._id.toString(),
+  //     document: {
+  //       name: product.name,
+  //       description: product.description,
+  //       category: product.category,
+  //       price: product.price,
+  //     },
+  //   });
+  // } catch (err) {
+  //   logger.warn("Elasticsearch indexing failed for product", { id: product._id, error: err.message });
+  // }
 
   return product;
 };
@@ -120,20 +120,20 @@ exports.updateProduct = async (id, updateData, userId) => {
   });
   if (!product) throw new AppError("Product not found", 404);
 
-  try {
-    await elasticClient.index({
-      index: "products",
-      id: product._id.toString(),
-      document: {
-        name: product.name,
-        description: product.description,
-        category: product.category,
-        price: product.price,
-      },
-    });
-  } catch (err) {
-    logger.warn("Elasticsearch re-indexing failed for product", { id: product._id, error: err.message });
-  }
+  // try {
+  //   await elasticClient.index({
+  //     index: "products",
+  //     id: product._id.toString(),
+  //     document: {
+  //       name: product.name,
+  //       description: product.description,
+  //       category: product.category,
+  //       price: product.price,
+  //     },
+  //   });
+  // } catch (err) {
+  //   logger.warn("Elasticsearch re-indexing failed for product", { id: product._id, error: err.message });
+  // }
 
   return product;
 };
@@ -142,28 +142,38 @@ exports.deleteProduct = async (id) => {
   const product = await Product.findByIdAndDelete(id);
   if (!product) throw new AppError("Product not found", 404);
 
-  try {
-    await elasticClient.delete({
-      index: "products",
-      id: product._id.toString(),
-    });
-  } catch (err) {
-    logger.warn("Elasticsearch delete failed for product", { id: product._id, error: err.message });
-  }
+  // try {
+  //   await elasticClient.delete({
+  //     index: "products",
+  //     id: product._id.toString(),
+  //   });
+  // } catch (err) {
+  //   logger.warn("Elasticsearch delete failed for product", { id: product._id, error: err.message });
+  // }
 
   return product;
 };
 
 exports.searchProducts = async (keyword) => {
-  const result = await elasticClient.search({
-    index: "products",
-    query: {
-      multi_match: {
-        query: keyword,
-        fields: ["name", "description", "category"],
-      },
-    },
-  });
 
-  return result.hits.hits;
+  if (!keyword) return [];
+
+  return Product.find({
+    $text: { $search: keyword },
+  }, { score: { $meta: "textScore" } })
+    .sort({ score: { $meta: "textScore" } })
+    .limit(20)
+    .populate("images")
+    .lean();
+  // const result = await elasticClient.search({
+  //   index: "products",
+  //   query: {
+  //     multi_match: {
+  //       query: keyword,
+  //       fields: ["name", "description", "category"],
+  //     },
+  //   },
+  // });
+
+  // return result.hits.hits;
 };
