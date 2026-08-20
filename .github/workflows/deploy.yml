@@ -1,0 +1,31 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:  
+  group: deploy-backend
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-actions@v1
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            cd /home/opc/Ecommerce-node-js
+            git fetch --all
+            git reset --hard origin/main
+            npm ci --omit=dev
+            pm2 reload ecosystem.config.js --update-env
+            pm2 save
+            sleep 3
+            curl -fs http://127.0.0.1:5000/health \
+              || (pm2 logs --lines 40 --nostream; exit 1)
