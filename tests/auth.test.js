@@ -1,4 +1,6 @@
 const request = require("supertest");
+const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 const app = require("../src/app");
 const User = require("../src/modules/auth/user.model");
 const db = require("./helpers/db");
@@ -60,5 +62,45 @@ describe("Auth API", () => {
         const res = await request(app).get("/api/auth/me");
 
         expect(res.statusCode).toBe(401);
+    });
+
+    it("returns the current user for a valid token", async () => {
+        const registerRes = await register();
+
+        const res = await request(app)
+            .get("/api/auth/me")
+            .set("Authorization", `Bearer ${registerRes.body.accessToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.user.email).toBe(registerRes.body.user.email);
+    });
+
+    // These must be 401, not 500. A refresh-on-401 interceptor is the standard
+    // client pattern, so a 500 here means sessions die at token expiry instead
+    // of renewing — and the user sees a server error rather than a re-login.
+    it.each([
+        ["a malformed token", "abc.def.ghi"],
+        ["the literal string undefined", "undefined"],
+    ])("answers 401 for %s", async (_label, token) => {
+        const res = await request(app)
+            .get("/api/auth/me")
+            .set("Authorization", `Bearer ${token}`);
+
+        expect(res.statusCode).toBe(401);
+    });
+
+    it("answers 401 for an expired token", async () => {
+        const expired = jwt.sign(
+            { id: new mongoose.Types.ObjectId().toString() },
+            process.env.JWT_SECRET,
+            { expiresIn: -10 }
+        );
+
+        const res = await request(app)
+            .get("/api/auth/me")
+            .set("Authorization", `Bearer ${expired}`);
+
+        expect(res.statusCode).toBe(401);
+        expect(res.body.message).toBe("Session expired");
     });
 });

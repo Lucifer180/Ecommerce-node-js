@@ -17,7 +17,21 @@ exports.protect = asyncHandler(async (req, res, next) => {
         return next(new AppError("Not authorized", 401));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // jwt.verify throws on a malformed or expired token. Left uncaught it
+    // reaches the error handler with no statusCode and becomes a 500, which
+    // clients read as "the server is broken" rather than "log in again" — and
+    // a refresh-on-401 interceptor never fires, so sessions die at expiry
+    // instead of renewing.
+    let decoded;
+    try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+        const message = err.name === "TokenExpiredError"
+            ? "Session expired"
+            : "Not authorized";
+
+        return next(new AppError(message, 401));
+    }
 
     const user = await User.findById(decoded.id);
 
