@@ -1,8 +1,8 @@
 const app = require("./src/app");
 const connectDb = require("./src/config/db");
-const verifyEmail = require("./src/modules/mail/test")
+const verifyEmail = require("./src/modules/mail/verifyTransport")
 //const { connectRedis } = require("./src/config/redis");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const PORT = process.env.PORT || 5000;
 

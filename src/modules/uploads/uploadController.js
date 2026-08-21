@@ -2,11 +2,11 @@ const asyncHandler = require("../../shared/utils/asyncHandler");
 const uploadService = require("./upload.service");
 
 exports.generateUploadurl = asyncHandler(async (req, res) => {
-    const { fileName, fileType, fileSize, type } = req.body;
+    // fileName is deliberately ignored: the stored key is always generated.
+    const { fileType, fileSize, type } = req.body;
 
     const result = await uploadService.generatedUploadUrl({
         userId: req.user._id,
-        fileName,
         fileType,
         fileSize,
         type

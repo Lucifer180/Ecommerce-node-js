@@ -7,7 +7,7 @@ const allUsers = async () => {
 };
 
 const updateRole = async (id, role) => {
-    return User.findByIdAndUpdate(id, { role }, { new: true });
+    return User.findByIdAndUpdate(id, { role }, { returnDocument: "after" });
 };
 const findUserByEmail = async (email, includePassword = false) => {
     const query = User.findOne({ email });
@@ -48,7 +48,7 @@ const forgotPassword = async (email) => {
 };
 
 const saverefreshToken = async (userId, refreshToken) => {
-    return User.findByIdAndUpdate(userId, { refreshToken }, { new: true });
+    return User.findByIdAndUpdate(userId, { refreshToken }, { returnDocument: "after" });
 };
 
 const findUserByRefreshToken = async (hashedToken) => {

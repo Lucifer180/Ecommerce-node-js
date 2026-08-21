@@ -1,7 +1,7 @@
 const asyncHandler = require("../../shared/utils/asyncHandler");
 const authService = require("./auth.service");
 const emailQueue = require("../../queues/email.queue")
-const User = require("./user.model");
+const AppError = require("../../shared/errors/AppError");
 
 exports.getUsers = asyncHandler(async (req, res) => {
     const users = await authService.getAllUsers();
@@ -22,17 +22,16 @@ exports.getUsers = asyncHandler(async (req, res) => {
  * Admin-only. Previously this updated `req.user.id` — the caller's own record —
  * which let any signed-in user promote themselves to admin.
  */
-exports.updateRole = asyncHandler(async (req, res) => {
-    const { role } = req.body;
+exports.updateRole = asyncHandler(async (req, res, next) => {
+    const { userId, role } = req.body;
 
-    // if (!userId) {
-    //     return res.status(400).json({
-    //         success: false,
-    //         message: "userId is required"
-    //     });
-    // }
+    // The target is always taken from the body, never from req.user: sourcing
+    // it from the caller is what made self-promotion possible.
+    if (!userId) {
+        return next(new AppError("userId is required", 400));
+    }
 
-    const user = await authService.updateRoleUser(req.user.id, role);
+    const user = await authService.updateRoleUser(userId, role);
 
     res.status(200).json({
         success: true,
@@ -48,7 +47,7 @@ exports.updateRole = asyncHandler(async (req, res) => {
 /** Shared shape for the token-issuing endpoints, so the client can gate UI immediately. */
 const toAuthPayload = (result) => ({
     success: true,
-    acesstoken: result.accessToken,
+    accessToken: result.accessToken,
     refreshToken: result.refreshToken,
     role: result.user.role,
     user: {

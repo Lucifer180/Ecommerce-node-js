@@ -18,7 +18,7 @@ exports.findById = async (id) => {
 
 exports.findByIdAndUpdate = async (id, updateData) => {
   return await Product.findByIdAndUpdate(id, updateData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 };

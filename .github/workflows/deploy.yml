@@ -1,16 +1,22 @@
 name: Deploy Backend
 
+# Deploys only after Backend CI has gone green on the same commit. Triggering
+# straight off `push` meant a commit with failing tests still shipped.
 on:
-    push:
+    workflow_run:
+        workflows: ["Backend CI"]
+        types: [completed]
         branches: [main]
     workflow_dispatch:
 
 concurrency:
     group: deploy-backend
     cancel-in-progress: false
+
 jobs:
     deploy:
         runs-on: ubuntu-latest
+        if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
         steps:
             - uses: appleboy/ssh-action@v1
               with:
@@ -21,11 +27,24 @@ jobs:
                   script: |
                       set -e
                       cd /home/opc/Ecommerce-node-js
+
+                      # Remember where we are so a failed health check can go back.
+                      PREVIOUS_SHA=$(git rev-parse HEAD)
+
                       git fetch --all
                       git reset --hard origin/main
                       npm ci --omit=dev
                       pm2 reload ecosystem.config.js --update-env
                       pm2 save
                       sleep 3
-                      curl -fs http://127.0.0.1:5000/health \
-                        || (pm2 logs --lines 40 --nostream; exit 1)
+
+                      if ! curl -fs http://127.0.0.1:5000/health; then
+                        echo "Health check failed — rolling back to $PREVIOUS_SHA"
+                        pm2 logs --lines 40 --nostream || true
+                        git reset --hard "$PREVIOUS_SHA"
+                        npm ci --omit=dev
+                        pm2 reload ecosystem.config.js --update-env
+                        exit 1
+                      fi
+
+                      echo "Deploy healthy at $(git rev-parse --short HEAD)"

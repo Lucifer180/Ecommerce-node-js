@@ -1,5 +1,5 @@
 const Razorpay = require("razorpay");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 if (
     !process.env.RAZORPAY_KEY_ID ||

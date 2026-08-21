@@ -22,11 +22,11 @@ router.post("/forgot-password", authController.getForgotPassword);
 
 router.patch("/reset-password/:token", authController.ResetPassword);
 
+// Role changes are admin-only. There is deliberately no self-service variant.
 // Admin only: listing every user and changing roles are both privileged.
 router.get("/", protect, authorize("admin"), authController.getUsers);
 
 router.put("/", protect, authorize("admin"), authController.updateRole);
 
-router.put("/update", protect, authController.updateRole);
 
 module.exports = router;

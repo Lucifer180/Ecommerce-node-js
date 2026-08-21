@@ -115,7 +115,7 @@ exports.getProductById = async (id) => {
 exports.updateProduct = async (id, updateData, userId) => {
   await validateImages(updateData.images, userId)
   const product = await Product.findByIdAndUpdate(id, updateData, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
   if (!product) throw new AppError("Product not found", 404);

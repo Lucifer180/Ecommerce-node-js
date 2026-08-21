@@ -11,31 +11,33 @@ on:
 
 jobs:
   test:
-    env:
-      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
-      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }} 
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout-code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
-
         with:
           node-version: 22
+          cache: npm
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run Lint
+      - name: Run lint
         run: npm run lint
 
-      # - name: Build Check
-      #   run: npm run build
+      # mongodb-memory-server downloads a mongod binary on first run; caching it
+      # keeps the test job from re-fetching ~100MB on every push.
+      - name: Cache MongoDB binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}
 
-      # - name: Run Tests
-      #   run: npm test
+      # No secrets needed: tests/setup/env.js supplies dummy credentials and the
+      # suite runs against an in-memory replica set.
+      - name: Run tests
+        run: npm test

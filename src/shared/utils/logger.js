@@ -1,5 +1,7 @@
 const winston = require("winston");
 
+const isTest = process.env.NODE_ENV === "test";
+
 const logger = winston.createLogger({
     level:"info",
 
@@ -9,15 +11,19 @@ const logger = winston.createLogger({
     ),
 
     transports:[
-        new winston.transports.Console(),
+        // Tests assert on behaviour, not on log noise; a failing suite should be
+        // readable in CI output.
+        new winston.transports.Console({ silent: isTest }),
 
         new winston.transports.File({
-            filename:"logs/error.log",
-            level:"error"
+            filename: "logs/error.log",
+            level: "error",
+            silent: isTest
         }),
 
         new winston.transports.File({
-            filename:"logs/combined.log"
+            filename: "logs/combined.log",
+            silent: isTest
         })
     ]
 });
