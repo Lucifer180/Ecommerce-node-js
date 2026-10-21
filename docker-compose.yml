@@ -14,6 +14,14 @@ services:
       # names, and the replicaSet parameter is required for checkout to work.
       MONGO_URI: mongodb://mongo:27017/ecommerce?replicaSet=rs0&retryWrites=true
       REDIS_URL: redis://redis:6379
+      # Crawler-Service runs on the host (it needs a real Chromium); "localhost"
+      # here would be this container.
+      CRAWLER_URL: http://host.docker.internal:5001
+
+    # Docker Desktop defines host.docker.internal itself; this makes it work on
+    # Linux Docker Engine too.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     depends_on:
       mongo:
