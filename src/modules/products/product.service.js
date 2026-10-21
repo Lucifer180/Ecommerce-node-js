@@ -4,6 +4,7 @@ const redis = require("../../config/queue");
 const AppError = require("../../shared/errors/AppError");
 // const elasticClient = require("../../config/elasticSearch");
 const Upload = require("../uploads/upload.model");
+const crawlerClient = require("./crawler.client");
 // const logger = require("../../shared/utils/logger");
 
 const validateImages = async (images, userId) => {
@@ -154,26 +155,27 @@ exports.deleteProduct = async (id) => {
   return product;
 };
 
+const SEARCH_CACHE_TTL_SECONDS = 15 * 60;
+
+// Search is served by Crawler-Service (Amazon/Flipkart/Myntra), not the Mongo
+// catalogue. A crawl is slow, so results are cached; a Redis failure only
+// costs the cache, never the search.
 exports.searchProducts = async (keyword) => {
+  const q = keyword.trim().toLowerCase().replace(/\s+/g, " ");
+  const cacheKey = `search:${q}`;
 
-  if (!keyword) return [];
+  if (redis) {
+    const cached = await redis.get(cacheKey).catch(() => null);
+    if (cached) return JSON.parse(cached);
+  }
 
-  return Product.find({
-    $text: { $search: keyword },
-  }, { score: { $meta: "textScore" } })
-    .sort({ score: { $meta: "textScore" } })
-    .limit(20)
-    .populate("images")
-    .lean();
-  // const result = await elasticClient.search({
-  //   index: "products",
-  //   query: {
-  //     multi_match: {
-  //       query: keyword,
-  //       fields: ["name", "description", "category"],
-  //     },
-  //   },
-  // });
+  const result = await crawlerClient.search(q);
 
-  // return result.hits.hits;
+  // Don't pin an outage for 15 minutes: only cache if some store answered.
+  const anySourceOk = (result.sources ?? []).some((source) => source.status === "ok");
+  if (redis && anySourceOk) {
+    await redis.set(cacheKey, JSON.stringify(result), "EX", SEARCH_CACHE_TTL_SECONDS).catch(() => {});
+  }
+
+  return result;
 };

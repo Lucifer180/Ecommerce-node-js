@@ -5,6 +5,25 @@
       "name": "storefront",
       "url": "http://localhost:5173",
       "port": 5173
+    },
+    {
+      "name": "storefront-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "../front-end0-ecommerce", "run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "crawler",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "../Crawler-Service", "run", "dev"],
+      "env": { "HEADLESS": "true" },
+      "port": 5001
+    },
+    {
+      "name": "api-search-only",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["-e", "process.env.NODE_ENV='test';require('dotenv').config({quiet:true});require('./src/app').listen(5000,()=>console.log('api (no mongo) on 5000'))"],
+      "port": 5000
     }
   ]
 }

@@ -48,15 +48,19 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
 });
 
 exports.searchProducts = asyncHandler(async (req, res) => {
-  const { keyword } = req.query;
+  const keyword = typeof req.query.keyword === "string" ? req.query.keyword.trim() : "";
 
-  if (!keyword) {
+  if (keyword.length < 2 || keyword.length > 120) {
     return res.status(400).json({
-      message: "Keyword is required",
+      success: false,
+      message: "Keyword must be 2-120 characters",
     });
   }
 
   const result = await productService.searchProducts(keyword);
 
-  res.json(result);
+  res.json({
+    success: true,
+    data: result,
+  });
 });
