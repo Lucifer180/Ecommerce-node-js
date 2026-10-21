@@ -81,6 +81,7 @@ const orderRoutes = require("./modules/orders/order.routes");
 const paymentRoutes = require("./modules/payments/payment.routes");
 const uploadRoutes = require("./modules/uploads/upload.routes");
 const notificationRoutes = require("./modules/notifications/notification.routes");
+const recommendationRoutes = require("./modules/recommendations/recommendation.routes");
 
 // Probed by the deploy pipeline after every release, so it stays outside /api
 // and ahead of the rate limiter.
@@ -98,6 +99,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/recommendations", recommendationRoutes);
 
 app.get("/", (req, res) => {
     res.send("Hello World!");
