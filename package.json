@@ -10,7 +10,7 @@
     "start": "node server.js",
     "start:cluster": "node cluster.js",
     "worker": "node worker.js",
-    "dev": "nodemon server.js",
+    "dev": "nodemon --ignore crawler/ server.js",
     "test": "jest --runInBand",
     "test:watch": "jest --runInBand --watch",
     "lint": "eslint .",

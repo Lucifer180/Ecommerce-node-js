@@ -1,0 +1,4 @@
+[submodule "crawler"]
+	path = crawler
+	url = https://github.com/Lucifer180/Crawler-service.git
+	branch = main

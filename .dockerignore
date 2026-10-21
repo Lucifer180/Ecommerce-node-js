@@ -3,3 +3,5 @@ node_modules
 .env
 logs
 coverage
+# Crawler-Service submodule: its own image, not part of the API
+crawler

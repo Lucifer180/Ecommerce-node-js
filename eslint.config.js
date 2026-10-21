@@ -4,7 +4,7 @@ const globals = require("globals");
 module.exports = [
     {
         // Generated output and vendored code — nothing here is ours to fix.
-        ignores: ["node_modules/**", "coverage/**", "logs/**"],
+        ignores: ["node_modules/**", "coverage/**", "logs/**", "crawler/**"],
     },
     js.configs.recommended,
     {
