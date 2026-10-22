@@ -36,9 +36,18 @@ jobs:
                       npm ci --omit=dev
                       pm2 reload ecosystem.config.js --update-env
                       pm2 save
-                      sleep 3
 
-                      if ! curl -fs http://127.0.0.1:5000/health; then
+                      # On the 1 GB box npm ci pushes memory into swap, and Node can
+                      # then take well over 3 s to start listening. A single check
+                      # after a fixed sleep rolled back healthy releases, so poll for
+                      # up to 60 s instead.
+                      HEALTHY=no
+                      for attempt in $(seq 1 30); do
+                        if curl -fs http://127.0.0.1:5000/health; then HEALTHY=yes; break; fi
+                        sleep 2
+                      done
+
+                      if [ "$HEALTHY" != yes ]; then
                         echo "Health check failed — rolling back to $PREVIOUS_SHA"
                         pm2 logs --lines 40 --nostream || true
                         git reset --hard "$PREVIOUS_SHA"
