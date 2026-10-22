@@ -14,9 +14,8 @@ services:
       # names, and the replicaSet parameter is required for checkout to work.
       MONGO_URI: mongodb://mongo:27017/ecommerce?replicaSet=rs0&retryWrites=true
       REDIS_URL: redis://redis:6379
-      # CRAWLER_URL / CRAWLER_API_KEY come from .env and point at the Cloud Run
-      # crawler. To use the local one instead (see the crawler service below),
-      # set CRAWLER_URL=http://crawler:8080 here.
+      # CRAWLER_URL / CRAWLER_API_KEY come from .env and point at the Crawler-Service
+      # deployed on Cloud Run; it is not part of this stack.
 
     depends_on:
       mongo:
@@ -95,24 +94,6 @@ services:
 
     restart: unless-stopped
 
-  # Local copy of Crawler-Service (the `crawler` git submodule). Search normally
-  # uses the deployed Cloud Run crawler, so this only starts when asked for:
-  #   docker compose --profile local-crawler up -d
-  crawler:
-    profiles: ["local-crawler"]
-    build: ./crawler
-    container_name: ecommerce-crawler
-    environment:
-      API_KEYS: ${CRAWLER_API_KEY}
-      MAX_CONCURRENT_SESSIONS: 2
-    shm_size: "1gb"   # Chromium crashes tabs with Docker's default 64 MB
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    restart: unless-stopped
 volumes:
   mongo-data:
   api-node-modules:
